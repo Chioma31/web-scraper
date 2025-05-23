@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: creative-opportunities-api
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: OPENAI_API_KEY
+        sync: false
+
+  - type: web
+    name: creative-opportunities-streamlit
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run streamlit_app.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: OPENAI_API_KEY
+        sync: false 
