@@ -28,9 +28,9 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to Creative Opportunities API"}
+    return {"message": "Welcome to the Creative Opportunities API"}
 
-@app.get("/opportunities", response_model=List[Opportunity])
+@app.get("/opportunities")
 async def get_opportunities():
     try:
         logger.info("Starting to fetch creative opportunities...")
@@ -41,14 +41,8 @@ async def get_opportunities():
     except Exception as e:
         error_msg = f"Error fetching opportunities: {str(e)}\n{traceback.format_exc()}"
         logger.error(error_msg)
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "error": "Failed to fetch opportunities",
-                "message": str(e),
-                "traceback": traceback.format_exc()
-            }
-        )
+        return {"error": str(e)}
 
 if __name__ == "__main__":
-    uvicorn.run("api:app", host="0.0.0.0", port=8000, reload=True) 
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True) 

@@ -70,7 +70,7 @@ def find_creative_opportunities():
             "You know how to identify credible, valuable, and active listings by exploring various trusted online sources. "
             "You present this information in a clean, structured format with all the necessary details."
         ),
-        tools=[search_tool, scrape_tool, website_search],
+        tools=[search_tool, scrape_tool],
         verbose=True,
         allow_delegation=False,
     )
@@ -129,7 +129,7 @@ def find_creative_opportunities():
             "- Verify the opportunity is still accepting applications by checking the application page"
         ),
         expected_output="""
-            Return in a list 7 opportunities formatted as JSON objects with the following structure:
+            Return in a list 10 opportunities formatted as JSON objects with the following structure:
             {
                 "title": "Opportunity title",
                 "company": "Organization or company name (if available)",
