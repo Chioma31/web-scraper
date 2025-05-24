@@ -7,3 +7,5 @@ requests
 langchain
 langchain-community
 crewai-tools
+firebase-admin
+schedule

@@ -1,9 +1,17 @@
+# Environment variables
+.env
+
+# Credentials
+config/credentials/
+*.json
+
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+env/
 build/
 develop-eggs/
 dist/
@@ -21,9 +29,9 @@ wheels/
 *.egg
 
 # Virtual Environment
-crew-env/
 venv/
 ENV/
+crew-env/
 
 # IDE
 .idea/
@@ -41,5 +49,4 @@ ehthumbs.db
 Thumbs.db
 
 # Environment variables
-.env
 .env.local 

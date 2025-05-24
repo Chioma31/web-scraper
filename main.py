@@ -22,11 +22,9 @@ class Opportunity(BaseModel):
     event: str
     eventDescription: str
     description: str
-    image: str
     jobLocation: str
     payment: Payment
-    startDate: str
-    endDate: str
+    deadline: str
     tags: List[str]
     deliverables: List[str]
     link: str
@@ -51,6 +49,8 @@ def find_creative_opportunities():
     scrape_tool = ScrapeWebsiteTool()
     website_search = WebsiteSearchTool()
 
+    # (application assistant)
+
 
 
     # Define your agent
@@ -59,105 +59,106 @@ def find_creative_opportunities():
         llm=llm,
         role="Creative Opportunity Researcher",
         goal=(
-            "Search for high-quality opportunities for Nigerian creatives. "
-            "This includes jobs, grants, competitions, partnerships, and open calls across creative industries like music, writing, tech, architecture, content creation,  fashion, film, visual arts, photography, and design."
-            "Ensure these opportunities are currently open, paid and specify if they are remote, onsite (city), or hybrid."
+            "Search for high-quality opportunities"
+            "This includes jobs, grants, competitions, partnerships, exhibitions, festivals and open calls across industries like music, writing, tech, architecture, content creation, fashion, film, visual arts, photography, videography and design."
+            "Ensure these opportunities are currently open and paid"
             "Avoid blog aggregators or listicles. Focus on official sources and links."
         ),
         backstory=(
-            "You are an expert global opportunity researcher for the creative economy. "
-            "You specialize in finding international and local opportunities tailored to Nigerian creatives across all disciplines. "
+            "You are an expert global opportunity researcher. "
+            "You specialize in finding international and local opportunities. "
             "You know how to identify credible, valuable, and active listings by exploring various trusted online sources. "
-            "You present this information in a clean, structured format with all the necessary details."
+            "You present this information in a clean, structured format with all the details needed."
         ),
         tools=[search_tool, scrape_tool],
         verbose=True,
         allow_delegation=False,
     )
+    
 
-    # Define a task
-    find_opportunities = Task(
+    # Define tasks
+    search_task = Task(
         description=(
-            "Search globally across multiple trusted sources for real-time opportunities "
-            "relevant to Nigerian creatives in 2025. Focus on opportunities with deadlines within the next 3 months. "
-            "These should include jobs, grants, competitions, or partnerships "
-            "in music, writing, tech, architecture, content creation, fashion, film, visual arts, photography, and design. "
-            "Prioritize opportunities with minimum payment of $500 or equivalent in USD, EUR, or NGN.\n\n"
-            "Focus on official sources including but not limited to:\n"
-            "- Behance Jobs\n"
-            "- Dribbble Jobs\n"
-            "- Creative Pool\n"
-            "- Artsy\n"
-            "- ArtJobs\n"
-            "- Creative Opportunities (UK)\n"
-            "- African Artists' Foundation\n"
-            "- British Council Nigeria\n"
-            "- grants.gov\n"
-            "- UNESCO jobs\n"
-            "- Music in Africa\n"
-            "- artconnect.com\n"
-            "- opportunitydesk.org\n"
-            "- trybeafrica.com\n"
-            "- opportunitiesforyouth.org\n"
-            "- africanofilter.org\n\n"
-            "Prioritize these types of opportunities:\n"
-            "- Paid residencies\n"
-            "- Artist grants\n"
-            "- Creative fellowships\n"
-            "- International exhibitions\n"
-            "- Film festivals\n"
-            "- Music competitions\n"
-            "- Design challenges\n\n"
-            "For each opportunity, verify and include:\n"
-            "- Title of the opportunity or job\n"
-            "- Company name\n"
-            "- Company email (must be a valid, working email)\n"
-            "- Event description\n"
-            "- Description of the opportunity or job\n"
-            "- Deliverables expected from the creative\n"
-            "- Valid Link to apply for the opportunity (must be a direct link to the application page)\n"
-            "- Amount in number and currency for the opportunity\n"
-            "- Location (remote, onsite with specific city, or hybrid)\n"
-            "- Start and end dates for the application\n"
-            "Validation Requirements:\n"
-            "- Verify the application process is still open\n"
-            "- Confirm the contact information is valid\n"
-            "- Check that application requirements are clearly listed\n"
-            "- Do not include any link that redirects to a 404\n"
-            "- Each opportunity must include a working direct link to the live opportunity application page\n"
-            "- Do not pick opportunities where the amount isn't specified\n"
-            "- Verify the opportunity is still accepting applications by checking the application page"
+            "Use 'Search the internet with Serper' to find opportunities with these search queries:\n"
+            "- 'creative opportunities today'\n"
+            "- 'paid creative jobs Nigeria'\n"
+            "- 'creative grants for Nigerians'\n"
+            "- 'music, writing, tech, architecture, content creation, fashion, film, visual arts, photography, videography and design jobs'\n\n"
+            "Then use 'Read website content' to check these specific sources:\n"
+            "- https://opportunitydesk.org\n"
+            "- https://opportunitiesforyouth.org\n"
+            "- http://africanofilter.org\n"
+            "- https://artconnect.com\n"
+            "- https://creativepool.com\n"
+            "- https://www.artsy.net\n"
+            "- https://www.artjobs.com/jobs\n"
+            "- https://the-dots.com/jobs/search\n"
+            "- https://africanartists.org\n"
+            "- https://www.grants.gov\n"
+            "- https://careers.unesco.org/go/All-jobs-openings/782502/\n"
+            "- https://www.musicinafrica.net\n"
+            "- https://trybeafrica.com/search-creative-opportunities/\n\n"
+            "Focus on opportunities with:\n"
+            "- Deadlines within the next 3 months\n"
+            "- Minimum payment of $100 or equivalent in USD, EUR, or NGN\n"
+            "- Valid application links"
         ),
-        expected_output="""
-            Return in a list 10 opportunities formatted as JSON objects with the following structure:
-            {
-                "title": "Opportunity title",
-                "company": "Organization or company name (if available)",
-                "companyEmail": "Official email contact (must be valid)",
-                "event": "Same as title or specific event name",
-                "eventDescription": "Detailed description of the job, event, grant, or competition",
-                "description": "Summary of what the creative is expected to do or submit",
-                "jobLocation": "Remote, Onsite (city), or Hybrid",
-                "payment": {
-                    "currency": "USD, EUR, or NGN",
-                    "total": amount 
-                },
-                "startDate": "Start date in ISO format",
-                "endDate": "Deadline or end date in ISO format",
-                "tags": ["Relevant tags like 'Writers', 'Fashion', 'Filmmakers'"],
-                "deliverables": ["A bullet point or sentence describing the expected submission or participation"],
-                "link": "Direct link to the source page of the opportunity",
-            }
-            Ensure each JSON object in the list is fully filled with accurate information and all links are working.
-            """,
         agent=opportunity_agent,
-        output_json=OpportunityList
+        expected_output="A list of 50 raw opportunity data from these sources",
+        tools=[search_tool, scrape_tool, website_search]
     )
+
+    filter_task = Task(
+        description=(
+            "For each opportunity found, use 'Read website content' to verify:\n"
+            "- The application link for the opportunity is working\n"
+            "- The deadline hasn't passed\n"
+            "- The payment amount meets the minimum requirement\n\n"
+            "Use 'Search in a specific website' to verify the opportunity is still active on the source website."
+        ),
+        agent=opportunity_agent,
+        expected_output="A filtered list of relevant opportunities that meet all the criteria given above",
+        tools=[scrape_tool, website_search]
+    )
+
+    validate_task = Task(
+        description=(
+            "For each filtered opportunity, use 'Read website content' to collect:\n"
+            "1. Basic Info: title, company name\n"
+            "2. Details: event description, job description, deliverables\n"
+            "3. Requirements: location, deadline\n"
+            "4. Payment: amount and currency\n"
+            "5. Application: working direct link to apply for the opportunity\n\n"
+            "Format the data into this structure:\n"
+            "{\n"
+            "    'title': 'Opportunity title',\n"
+            "    'company': 'Organization or company name',\n"
+            "    'companyEmail': 'Official email contact (must be valid)',\n"
+            "    'event': 'Same as title or specific event name',\n"
+            "    'eventDescription': 'Detailed description of the job, event, grant, or competition',\n"
+            "    'description': 'Summary of what the creative is expected to do or submit',\n"
+            "    'jobLocation': 'Remote, Onsite (city), or Hybrid',\n"
+            "    'payment': {\n"
+            "        'currency': 'USD, EUR, or NGN',\n"
+            "        'total': Payment for the opportunity \n"
+            "    },\n"
+            "    'deadline': 'Deadline or end date in ISO format',\n"
+            "    'tags': ['Relevant tags like Writers, Fashion, Filmmakers'],\n"
+            "    'deliverables': ['A bullet point or sentence describing the expected submission or participation'],\n"
+            "    'link': 'Direct link to the application page to apply for the opportunity'\n"
+            "}"
+        ),
+        agent=opportunity_agent,
+        expected_output="A validated list of 10 formatted opportunities in JSON structure",
+        output_json=OpportunityList,
+        tools=[scrape_tool, website_search]
+    )
+    
 
     # Put it all together
     crew = Crew(
         agents=[opportunity_agent],
-        tasks=[find_opportunities],
+        tasks=[search_task, filter_task, validate_task],
         verbose=True,
     )
 
