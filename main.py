@@ -46,12 +46,8 @@ def find_creative_opportunities():
 
     # Create a search tool
     search_tool = SerperDevTool()
-    scrape_tool = ScrapeWebsiteTool()
+    scrape_tool = ScrapeWebsiteTool(timeout=30)  
     website_search = WebsiteSearchTool()
-
-    # (application assistant)
-
-
 
     # Define your agent
     opportunity_agent = Agent(
@@ -79,29 +75,25 @@ def find_creative_opportunities():
     # Define tasks
     search_task = Task(
         description=(
-            "Use 'Search the internet with Serper' to find opportunities with these search queries:\n"
+            "Use 'Search the internet with Serper' to find opportunities with these specific search queries:\n"
             "- 'creative opportunities today'\n"
-            "- 'paid creative jobs Nigeria'\n"
             "- 'creative grants for Nigerians'\n"
-            "- 'music, writing, tech, architecture, content creation, fashion, film, visual arts, photography, videography and design jobs'\n\n"
-            "Then use 'Read website content' to check these specific sources:\n"
-            "- https://opportunitydesk.org\n"
-            "- https://opportunitiesforyouth.org\n"
-            "- http://africanofilter.org\n"
-            "- https://artconnect.com\n"
-            "- https://creativepool.com\n"
-            "- https://www.artsy.net\n"
-            "- https://www.artjobs.com/jobs\n"
-            "- https://the-dots.com/jobs/search\n"
-            "- https://africanartists.org\n"
-            "- https://www.grants.gov\n"
-            "- https://careers.unesco.org/go/All-jobs-openings/782502/\n"
-            "- https://www.musicinafrica.net\n"
-            "- https://trybeafrica.com/search-creative-opportunities/\n\n"
+            "- 'music industry jobs Nigeria'\n"
+            "- 'writing opportunities Africa'\n"
+            "- 'tech jobs creative sector'\n"
+            "- 'architecture competitions Africa'\n"
+            "- 'content creator jobs remote'\n"
+            "- 'fashion design opportunities Nigeria'\n"
+            "- 'film production jobs Africa'\n"
+            "- 'visual arts grants Nigeria'\n"
+            "- 'photography jobs creative'\n"
+            "- 'videography opportunities remote'\n"
+            "- 'design jobs Africa'\n\n"
+            "For each search result, use 'Read website content' to get the full details.\n"
             "Focus on opportunities with:\n"
             "- Deadlines within the next 3 months\n"
             "- Minimum payment of $100 or equivalent in USD, EUR, or NGN\n"
-            "- Valid application links"
+            "- get the job application link"
         ),
         agent=opportunity_agent,
         expected_output="A list of 50 raw opportunity data from these sources",
@@ -110,11 +102,11 @@ def find_creative_opportunities():
 
     filter_task = Task(
         description=(
-            "For each opportunity found, use 'Read website content' to verify:\n"
-            "- The application link for the opportunity is working\n"
+            "For each opportunity found, use the 'scrape_tool' tool to verify:\n"
+            "- The application link for the opportunity is not a 404 page\n"
             "- The deadline hasn't passed\n"
             "- The payment amount meets the minimum requirement\n\n"
-            "Use 'Search in a specific website' to verify the opportunity is still active on the source website."
+            "Use 'website_search' tool to verify the opportunity is still active on the source website."
         ),
         agent=opportunity_agent,
         expected_output="A filtered list of relevant opportunities that meet all the criteria given above",
@@ -123,12 +115,12 @@ def find_creative_opportunities():
 
     validate_task = Task(
         description=(
-            "For each filtered opportunity, use 'Read website content' to collect:\n"
+            "For each filtered opportunity collect:\n"
             "1. Basic Info: title, company name\n"
             "2. Details: event description, job description, deliverables\n"
             "3. Requirements: location, deadline\n"
             "4. Payment: amount and currency\n"
-            "5. Application: working direct link to apply for the opportunity\n\n"
+            "5. Application: a direct link to apply for the opportunity\n\n"
             "Format the data into this structure:\n"
             "{\n"
             "    'title': 'Opportunity title',\n"
@@ -151,7 +143,6 @@ def find_creative_opportunities():
         agent=opportunity_agent,
         expected_output="A validated list of 10 formatted opportunities in JSON structure",
         output_json=OpportunityList,
-        tools=[scrape_tool, website_search]
     )
     
 
@@ -165,12 +156,7 @@ def find_creative_opportunities():
     result = crew.kickoff()
     return result
 
-        # source crew-env/bin/activate
-
 if __name__ == "__main__":
     opportunities = find_creative_opportunities()
-    # print(opportunities)
     print(opportunities["opportunities"])
 
-    # result = split_json_string(opportunities)
-    # print(result)
