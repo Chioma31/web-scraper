@@ -33,6 +33,13 @@ class Opportunity(BaseModel):
 class OpportunityList(BaseModel):
     opportunities: List[Opportunity]
 
+def is_valid_link(url: str) -> bool:
+    try:
+        response = requests.head(url, timeout=10)
+        return response.status_code < 400
+    except Exception:
+        return False
+
 
 def find_creative_opportunities():
     load_dotenv()
@@ -75,7 +82,7 @@ def find_creative_opportunities():
     # Define tasks
     search_task = Task(
         description=(
-            "Use 'Search the internet with Serper' to find opportunities with these specific search queries:\n"
+            "Use 'Search the internet with Serper' to find up to 30 high-quality opportunities that match these queries:\n"
             "- 'creative opportunities today'\n"
             "- 'creative grants for Nigerians'\n"
             "- 'music industry jobs Nigeria'\n"
@@ -89,38 +96,37 @@ def find_creative_opportunities():
             "- 'photography jobs creative'\n"
             "- 'videography opportunities remote'\n"
             "- 'design jobs Africa'\n\n"
-            "For each search result, use 'Read website content' to get the full details.\n"
-            "Focus on opportunities with:\n"
-            "- Deadlines within the next 3 months\n"
-            "- Minimum payment of $100 or equivalent in USD, EUR, or NGN\n"
-            "- get the job application link"
+            "Provide exactly 20 relevant opportunities"
         ),
         agent=opportunity_agent,
-        expected_output="A list of 50 raw opportunity data from these sources",
-        tools=[search_tool, scrape_tool, website_search]
+        expected_output="A list of 30 raw opportunity data from these sources",
+        tools=[search_tool]
     )
 
     filter_task = Task(
         description=(
-            "For each opportunity found, use the 'scrape_tool' tool to verify:\n"
-            "- The application link for the opportunity is not a 404 page\n"
-            "- The deadline hasn't passed\n"
-            "- The payment amount meets the minimum requirement\n\n"
-            "Use 'website_search' tool to verify the opportunity is still active on the source website."
+            "For each opportunity found, use the 'Read website content' tool to verify:\n"
+            "- The application link for the opportunity does not go to a 404 page.\n"
+            "- Keep only those with valid links (no 404s, using 'website_search' and 'scrape_tool').\n"
+            "- Ensure they opportunity's deadline date isnt before today date (deadline within 3 months from today).\n"
+            "- Do not return opportunities that are past deadline date.\n"
+            "- The application link for the opportunity is a valid link from the website the opportunity was found.\n"
+            "Focus only on the official opportunity page, ignoring external articles or blog posts."
         ),
         agent=opportunity_agent,
-        expected_output="A filtered list of relevant opportunities that meet all the criteria given above",
+        expected_output="A filtered list of 20 relevant opportunities that meet all the criteria given in the description",
         tools=[scrape_tool, website_search]
     )
 
     validate_task = Task(
         description=(
-            "For each filtered opportunity collect:\n"
+            "From the 20 detailed opportunities collect:\n"
             "1. Basic Info: title, company name\n"
             "2. Details: event description, job description, deliverables\n"
             "3. Requirements: location, deadline\n"
             "4. Payment: amount and currency\n"
             "5. Application: a direct link to apply for the opportunity\n\n"
+            "- Keep 10 final validated opportunities.\n\n"
             "Format the data into this structure:\n"
             "{\n"
             "    'title': 'Opportunity title',\n"
@@ -137,7 +143,7 @@ def find_creative_opportunities():
             "    'deadline': 'Deadline or end date in ISO format',\n"
             "    'tags': ['Relevant tags like Writers, Fashion, Filmmakers'],\n"
             "    'deliverables': ['A bullet point or sentence describing the expected submission or participation'],\n"
-            "    'link': 'Direct link to the application page to apply for the opportunity'\n"
+            "    'link': 'Direct link to apply for the opportunity'\n"
             "}"
         ),
         agent=opportunity_agent,
@@ -153,8 +159,19 @@ def find_creative_opportunities():
         verbose=True,
     )
 
+
     result = crew.kickoff()
-    return result
+    validated_opportunities = result["opportunities"]
+
+    # Validate links
+    for opp in validated_opportunities:
+        if not is_valid_link(opp["link"]):
+            print(f"Warning: Invalid link detected for {opp['title']} - {opp['link']}")
+            opp["link_verified"] = False
+        else:
+            opp["link_verified"] = True
+
+    return {"opportunities": validated_opportunities}
 
 if __name__ == "__main__":
     opportunities = find_creative_opportunities()
