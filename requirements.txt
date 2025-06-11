@@ -1,7 +1,7 @@
 fastapi
 uvicorn
 pydantic
-crewai
+crewai<0.121
 python-dotenv
 requests
 langchain
@@ -9,3 +9,4 @@ langchain-community
 crewai-tools
 firebase-admin
 schedule
+anthropic
